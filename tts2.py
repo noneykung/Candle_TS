@@ -8,7 +8,7 @@ from discord_slash import SlashCommand
 bot = commands.Bot(command_prefix='t.',help_command=None)
 slash = SlashCommand(bot, sync_commands=True)
 
-Token = ('OTA0NzU3OTE4NDU1NDU5ODYw.YYALeQ.p8Y0vQSCtj0cfN_JuUWb-ILONJU')
+Token = input("Insert Token Here : ")
 
 guild_id = {698129392257466380, 668845200973496360}
 chat_id = []
