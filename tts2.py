@@ -36,6 +36,18 @@ async def help(ctx):
     await ctx.send(content=None, embed=em)
 
 @slash.slash(
+    name = "How",
+    description = "ดูวิธีการใช้งาน",
+    guild_ids = guild_id 
+)
+async def how(ctx):
+    em = discord.Embed(title="How To การใช้เทียนไข?", description="สำหรับวิธีการตั้งค่าก่อนใช้งานมีอยู่สามขั้นตอนเท่านั้นนะคะ")
+    em.add_field(name="-", value="---")
+    em.add_field(name="-", value="---")
+    em.add_field(name="-", value="---")
+    await ctx.send(content=None, embed=em)
+
+@slash.slash(
     name = 'join',
     description = 'Let me in your voice channel',
     guild_ids = guild_id
