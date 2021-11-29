@@ -149,6 +149,17 @@ async def check(ctx):
         await ctx.reply("TTS already setup in : " + author_name + " (" + tts_author + ")")
         print("\nCommand Check TTS setup in chat : " + chat_name + " (" + chat_id + ")\n" + "Setup by : " + author_name)
 
+@slash.slash(
+    name = "Reply",
+    description = "Speech Reply message", 
+    guild_ids = guild_id
+)
+async def r(ctx):
+    voice_client = get(bot.voice_clients, guild=ctx.guild)
+    source = discord.FFmpegOpusAudio('speech.mp3')
+    await ctx.reply("Message reply complete")
+    voice_client.play(source)
+
 @bot.event
 async def on_message(message):
 
