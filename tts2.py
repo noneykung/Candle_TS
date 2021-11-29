@@ -8,6 +8,7 @@ from discord.utils import get
 from gtts import gTTS
 from discord.ext import commands
 from discord_slash import SlashCommand
+from discord_components import Button, Select, SelectOption, ComponentsBot
 
 bot = commands.Bot(command_prefix='t.',help_command=None)
 slash = SlashCommand(bot, sync_commands=True)
@@ -47,11 +48,21 @@ async def on_ready():
     guild_ids = guild_id 
 )
 async def help(ctx):
-    em = discord.Embed(title="เทียนไขมาแย้ววว", description="น้องเป็นบอทที่จะแปลงข้อความเป็นเสียงให้กับพี่ ๆ ในดิสนะคะ")
+    em = discord.Embed(
+        title = "เทียนไขมาแย้ววว", 
+        description = "น้องเป็นบอทที่จะแปลงข้อความเป็นเสียงให้กับพี่ ๆ ในดิสนะคะ",
+        colour = discord.Colour.from_rgb(255,230,189)
+    )
+    em.set_thumbnail(url="https://media.discordapp.net/attachments/902103837651906593/914784729981677598/Candle_TS_Logo.png?")
     em.add_field(name="/join", value="พาน้องเข้าห้องนะคะ")
     em.add_field(name="/disconnect", value="นำน้องออกจากห้องค่ะ")
     em.add_field(name="/setup", value="ตั้งค่าห้องสำหรับการใช้ฟีเจอร์ Text to speech ค่ะ")
-    await ctx.send(content=None, embed=em)
+    em.set_image(url="https://media.discordapp.net/attachments/902103837651906593/914784730182991872/Candle_TS_Banner.png")
+
+    await ctx.send(
+        content = None, 
+        embed = em,
+    )
 
 @slash.slash(
     name = "How",
@@ -59,7 +70,10 @@ async def help(ctx):
     guild_ids = guild_id 
 )
 async def how(ctx):
-    em = discord.Embed(title="How To การใช้เทียนไข?", description="สำหรับวิธีการตั้งค่าก่อนใช้งานมีอยู่สามขั้นตอนเท่านั้นนะคะ")
+    em = discord.Embed(
+        title="How To การใช้เทียนไข?", 
+        description="สำหรับวิธีการตั้งค่าก่อนใช้งานมีอยู่สามขั้นตอนเท่านั้นนะคะ"
+    )
     em.add_field(name="-", value="---")
     em.add_field(name="-", value="---")
     em.add_field(name="-", value="---")
