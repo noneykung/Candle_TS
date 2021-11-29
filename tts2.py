@@ -1,4 +1,8 @@
 import discord
+import os
+import json
+from json import JSONEncoder
+from os import path
 from discord import FFmpegPCMAudio
 from discord.utils import get
 from gtts import gTTS
@@ -8,7 +12,7 @@ from discord_slash import SlashCommand
 bot = commands.Bot(command_prefix='t.',help_command=None)
 slash = SlashCommand(bot, sync_commands=True)
 
-Token = input("Insert Token Here : ")
+Token = input("Insert token here : ")
 
 guild_id = {698129392257466380, 668845200973496360}
 chat_id = []
@@ -16,6 +20,20 @@ chat_name = []
 tts_author = []
 author_name = []
 setup_stat = 0
+
+'''
+with open('settings.json') as f:
+    data = json.load(f)
+
+if f["token"] == "":
+    Token = input("INSERT ME A TOKEN: ")
+    if Token == "":
+        print("WTF Token!?")
+        exit(1)
+    print("Next time, please set your token in settings.json")
+else:
+    Token = f["token"]
+'''
 
 @bot.event
 async def on_ready():
