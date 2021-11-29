@@ -53,15 +53,14 @@ async def help(ctx):
         description = "น้องเป็นบอทที่จะแปลงข้อความเป็นเสียงให้กับพี่ ๆ ในดิสนะคะ",
         colour = discord.Colour.from_rgb(255,230,189)
     )
-    em.set_thumbnail(url="https://media.discordapp.net/attachments/902103837651906593/914784729981677598/Candle_TS_Logo.png?")
+    em.set_author(name = "เทียนไขเจ้าค่ะ" , icon_url = "https://media.discordapp.net/attachments/902103837651906593/914784729981677598/Candle_TS_Logo.png?")
     em.add_field(name="/join", value="พาน้องเข้าห้องนะคะ")
     em.add_field(name="/disconnect", value="นำน้องออกจากห้องค่ะ")
     em.add_field(name="/setup", value="ตั้งค่าห้องสำหรับการใช้ฟีเจอร์ Text to speech ค่ะ")
     em.set_image(url="https://media.discordapp.net/attachments/902103837651906593/914784730182991872/Candle_TS_Banner.png")
 
     await ctx.send(
-        content = None, 
-        embed = em,
+        embed = em
     )
 
 @slash.slash(
@@ -155,7 +154,10 @@ async def on_message(message):
 
     global chat_id, setup_stat
 
-    if setup_stat == 1:
+    if message.author.id == 904757918455459860:
+        print("\nBot had talking in : " + message.content)
+
+    elif setup_stat == 1:
         if message.channel.id == int(chat_id) and message.author.id != 904757918455459860:
             tts = gTTS(str(message.content) ,lang='th')
             tts.save('speech.mp3')
@@ -169,9 +171,6 @@ async def on_message(message):
                 source = discord.FFmpegOpusAudio('speech.mp3')
                 voice_client.play(source)
                 print('Play... ' + message.content)
-
-        elif message.author.id == 904757918455459860:
-            print("\nBot had talking in : " + message.content)
 
         else :
             print('\nMessage in other chat : ' + message.channel.name + "\nIn content : " + message.content)
