@@ -2,7 +2,6 @@ import discord
 import os
 import json
 from json import JSONEncoder
-from os import path
 from discord import FFmpegPCMAudio
 from discord.utils import get
 from gtts import gTTS
@@ -21,6 +20,7 @@ chat_name = []
 tts_author = []
 author_name = []
 setup_stat = 0
+keep_text_stat = 0
 
 '''
 with open('settings.json') as f:
@@ -90,7 +90,7 @@ async def join(ctx):
     if voice_client == None:
         channel = ctx.author.voice.channel
         voice = await channel.connect()
-        source = discord.FFmpegOpusAudio('startup.mp3')
+        source = discord.FFmpegOpusAudio('startup.wav')
         await ctx.reply('Joined!')
         print('\nJoined!')
         voice.play(source)
@@ -131,7 +131,33 @@ async def setup(ctx):
     setup_stat = 1
     await ctx.reply("TTS Has setup in chat : " + chat_name + " (" + chat_id + ")")
     print("\nTTS Has setup in chat : " + chat_name + " (" + chat_id + ")")
+'''
+@slash.slash(
+    name='KeepText',
+    description='Set channel to speech',
+    guild_ids = guild_id
+)
+async def keeptext(ctx):
+    
+    global keep_text_stat
+    
+    if keep_text_stat == 0 and ctx.author.id == 479646298933297153:
+        keep_text_stat = 1
+        await ctx.reply("✅ : Keep Text was Enable")
+        f = open("text.txt", "a", encoding="utf8")
+        f.write("[✔ Start Keep]\n")
+        f.close()
 
+    elif keep_text_stat == 1 and ctx.author.id == 479646298933297153:
+        keep_text_stat = 0
+        await ctx.reply("🚫 : Keep Text was Disable")
+        f = open("text.txt", "a", encoding="utf8")
+        f.write("[❌ Ended Keep]\n \n")
+        f.close()
+
+    elif ctx.author.id != 479646298933297153:
+        await ctx.reply("You don't have permission to use this commands.")
+'''
 @slash.slash(
     name = "Check",
     description = "Check TTS Channel Id", 
@@ -163,7 +189,7 @@ async def r(ctx):
 @bot.event
 async def on_message(message):
 
-    global chat_id, setup_stat
+    global chat_id, setup_stat, keep_text_stat
 
     if message.author.id == 904757918455459860:
         print("\nBot had talking in : " + message.content)
@@ -178,10 +204,10 @@ async def on_message(message):
             if voice_client == None:
                 print('Bot dose not join voice channel')
 
-            elif voice_client != None : 
+            elif voice_client != None :
                 source = discord.FFmpegOpusAudio('speech.mp3')
                 voice_client.play(source)
-                print('Play... ' + message.content)
+                print('Play... : ' + message.content)
 
         else :
             print('\nMessage in other chat : ' + message.channel.name + "\nIn content : " + message.content)
@@ -190,5 +216,21 @@ async def on_message(message):
         print("\nAuthor did not setup TTS Channel for use TTS feture")
 
     await bot.process_commands(message)
+'''
+@bot.event
+async def on_message(text):
 
+    global keep_text_stat
+
+    if keep_text_stat == 1 and text.author.id != 904757918455459860:
+        txt = "[ " + str(text.guild) + " : " + str(text.channel.name) + " ] " + str(text.author.name) + " : " + str(text.content) + "\n"
+        f = open("text.txt", "a", encoding="utf8")
+        f.write(txt)
+        f.close()
+    
+    elif keep_text_stat == 0:
+        print("KT == 0")
+    else:
+        print("")
+'''
 bot.run(Token)
