@@ -7,12 +7,12 @@ from discord.utils import get
 from gtts import gTTS
 from discord.ext import commands
 from discord_slash import SlashCommand
-from discord_components import Button, Select, SelectOption, ComponentsBot
 
 bot = commands.Bot(command_prefix='t.',help_command=None)
 slash = SlashCommand(bot, sync_commands=True)
 
-Token = input("Insert token here : ")
+#Token = input("Insert token here : ")
+Token = '***REMOVED_TOKEN***'
 
 guild_id = {698129392257466380, 668845200973496360}
 chat_id = []
@@ -48,20 +48,30 @@ async def on_ready():
     guild_ids = guild_id 
 )
 async def help(ctx):
-    em = discord.Embed(
-        title = "เทียนไขมาแย้ววว", 
-        description = "น้องเป็นบอทที่จะแปลงข้อความเป็นเสียงให้กับพี่ ๆ ในดิสนะคะ",
+    em = discord.Embed( 
+        description = "✤ กดปุ่มข้างล่างเพื่อดูคำสั่งต่าง ๆ เลยค่ะ\n┊  Invite Here : ยังไม่มีให้เชิญในตอนนี้น้าาาา\n✤ ติดต่อผู้พัฒนา : におさん#2790",
         colour = discord.Colour.from_rgb(255,230,189)
     )
-    em.set_author(name = "เทียนไขเจ้าค่ะ" , icon_url = "https://media.discordapp.net/attachments/902103837651906593/914784729981677598/Candle_TS_Logo.png?")
-    em.add_field(name="/join", value="พาน้องเข้าห้องนะคะ")
-    em.add_field(name="/disconnect", value="นำน้องออกจากห้องค่ะ")
-    em.add_field(name="/setup", value="ตั้งค่าห้องสำหรับการใช้ฟีเจอร์ Text to speech ค่ะ")
+    em.set_author(name = "●   ต้องการความช่วยเหลือใช่มั๊ยคะ?" , icon_url = "https://img.itch.zone/aW1nLzQ0NTQ0ODEuZ2lm/original/OnrQhz.gif")
+    em.set_footer(text = "0.1.3 | Text to speech Bot for everyone!")
     em.set_image(url="https://media.discordapp.net/attachments/902103837651906593/914784730182991872/Candle_TS_Banner.png")
-
+    
     await ctx.send(
         embed = em
     )
+
+@slash.slash(
+    name = 'Move',
+    description = 'Move member to another voice channel',
+    guild_ids = guild_id
+)
+async def move(
+    ctx, *,
+    channel: discord.VoiceChannel
+):
+    voice = discord.VoiceChannel
+    print(voice)
+
 
 @slash.slash(
     name = "How",
@@ -180,7 +190,7 @@ async def check(ctx):
     description = "Speech Reply message", 
     guild_ids = guild_id
 )
-async def r(ctx):
+async def reply(ctx):
     voice_client = get(bot.voice_clients, guild=ctx.guild)
     source = discord.FFmpegOpusAudio('speech.mp3')
     await ctx.reply("Message reply complete")
@@ -232,5 +242,7 @@ async def on_message(text):
         print("KT == 0")
     else:
         print("")
+
+    await bot.process_commands(message)
 '''
 bot.run(Token)
