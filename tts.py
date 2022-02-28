@@ -2,6 +2,7 @@ import discord
 import os
 import json
 from json import JSONEncoder
+from os import path
 from discord import FFmpegPCMAudio
 from discord.utils import get
 from gtts import gTTS
@@ -20,12 +21,10 @@ chat_name = []
 tts_author = []
 author_name = []
 setup_stat = 0
-keep_text_stat = 0
 
 '''
 with open('settings.json') as f:
     data = json.load(f)
-
 if f["token"] == "":
     Token = input("INSERT ME A TOKEN: ")
     if Token == "":
@@ -48,30 +47,20 @@ async def on_ready():
     guild_ids = guild_id 
 )
 async def help(ctx):
-    em = discord.Embed( 
-        description = "✤ กดปุ่มข้างล่างเพื่อดูคำสั่งต่าง ๆ เลยค่ะ\n┊  Invite Here : ยังไม่มีให้เชิญในตอนนี้น้าาาา\n✤ ติดต่อผู้พัฒนา : におさん#2790",
+    em = discord.Embed(
+        title = "เทียนไขมาแย้ววว", 
+        description = "น้องเป็นบอทที่จะแปลงข้อความเป็นเสียงให้กับพี่ ๆ ในดิสนะคะ",
         colour = discord.Colour.from_rgb(255,230,189)
     )
-    em.set_author(name = "●   ต้องการความช่วยเหลือใช่มั๊ยคะ?" , icon_url = "https://img.itch.zone/aW1nLzQ0NTQ0ODEuZ2lm/original/OnrQhz.gif")
-    em.set_footer(text = "0.1.3 | Text to speech Bot for everyone!")
+    em.set_author(name = "เทียนไขเจ้าค่ะ" , icon_url = "https://media.discordapp.net/attachments/902103837651906593/914784729981677598/Candle_TS_Logo.png?")
+    em.add_field(name="/join", value="พาน้องเข้าห้องนะคะ")
+    em.add_field(name="/disconnect", value="นำน้องออกจากห้องค่ะ")
+    em.add_field(name="/setup", value="ตั้งค่าห้องสำหรับการใช้ฟีเจอร์ Text to speech ค่ะ")
     em.set_image(url="https://media.discordapp.net/attachments/902103837651906593/914784730182991872/Candle_TS_Banner.png")
-    
+
     await ctx.send(
         embed = em
     )
-
-@slash.slash(
-    name = 'Move',
-    description = 'Move member to another voice channel',
-    guild_ids = guild_id
-)
-async def move(
-    ctx, *,
-    channel: discord.VoiceChannel
-):
-    voice = discord.VoiceChannel
-    print(voice)
-
 
 @slash.slash(
     name = "How",
@@ -100,7 +89,7 @@ async def join(ctx):
     if voice_client == None:
         channel = ctx.author.voice.channel
         voice = await channel.connect()
-        source = discord.FFmpegOpusAudio('startup.wav')
+        source = discord.FFmpegOpusAudio('startup.mp3')
         await ctx.reply('Joined!')
         print('\nJoined!')
         voice.play(source)
@@ -141,33 +130,7 @@ async def setup(ctx):
     setup_stat = 1
     await ctx.reply("TTS Has setup in chat : " + chat_name + " (" + chat_id + ")")
     print("\nTTS Has setup in chat : " + chat_name + " (" + chat_id + ")")
-'''
-@slash.slash(
-    name='KeepText',
-    description='Set channel to speech',
-    guild_ids = guild_id
-)
-async def keeptext(ctx):
-    
-    global keep_text_stat
-    
-    if keep_text_stat == 0 and ctx.author.id == 479646298933297153:
-        keep_text_stat = 1
-        await ctx.reply("✅ : Keep Text was Enable")
-        f = open("text.txt", "a", encoding="utf8")
-        f.write("[✔ Start Keep]\n")
-        f.close()
 
-    elif keep_text_stat == 1 and ctx.author.id == 479646298933297153:
-        keep_text_stat = 0
-        await ctx.reply("🚫 : Keep Text was Disable")
-        f = open("text.txt", "a", encoding="utf8")
-        f.write("[❌ Ended Keep]\n \n")
-        f.close()
-
-    elif ctx.author.id != 479646298933297153:
-        await ctx.reply("You don't have permission to use this commands.")
-'''
 @slash.slash(
     name = "Check",
     description = "Check TTS Channel Id", 
@@ -190,7 +153,7 @@ async def check(ctx):
     description = "Speech Reply message", 
     guild_ids = guild_id
 )
-async def reply(ctx):
+async def r(ctx):
     voice_client = get(bot.voice_clients, guild=ctx.guild)
     source = discord.FFmpegOpusAudio('speech.mp3')
     await ctx.reply("Message reply complete")
@@ -199,7 +162,7 @@ async def reply(ctx):
 @bot.event
 async def on_message(message):
 
-    global chat_id, setup_stat, keep_text_stat
+    global chat_id, setup_stat
 
     if message.author.id == 904757918455459860:
         print("\nBot had talking in : " + message.content)
@@ -214,10 +177,10 @@ async def on_message(message):
             if voice_client == None:
                 print('Bot dose not join voice channel')
 
-            elif voice_client != None :
+            elif voice_client != None : 
                 source = discord.FFmpegOpusAudio('speech.mp3')
                 voice_client.play(source)
-                print('Play... : ' + message.content)
+                print('Play... ' + message.content)
 
         else :
             print('\nMessage in other chat : ' + message.channel.name + "\nIn content : " + message.content)
@@ -226,23 +189,5 @@ async def on_message(message):
         print("\nAuthor did not setup TTS Channel for use TTS feture")
 
     await bot.process_commands(message)
-'''
-@bot.event
-async def on_message(text):
 
-    global keep_text_stat
-
-    if keep_text_stat == 1 and text.author.id != 904757918455459860:
-        txt = "[ " + str(text.guild) + " : " + str(text.channel.name) + " ] " + str(text.author.name) + " : " + str(text.content) + "\n"
-        f = open("text.txt", "a", encoding="utf8")
-        f.write(txt)
-        f.close()
-    
-    elif keep_text_stat == 0:
-        print("KT == 0")
-    else:
-        print("")
-
-    await bot.process_commands(message)
-'''
 bot.run(Token)
