@@ -1,0 +1,13 @@
+# secrets
+.env
+
+# data
+*.db
+*.db-journal
+data/
+
+# python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
