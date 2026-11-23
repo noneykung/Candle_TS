@@ -53,9 +53,21 @@ class TTSCommands(commands.Cog):
             return
         if session is not None:  # stale: connection dropped without an event
             await self._end(itx.guild.id)
+        if itx.guild.voice_client is not None:  # connected but untracked
+            await itx.guild.voice_client.disconnect(force=True)
 
         await itx.response.defer()
-        vc = await channel.connect(self_deaf=True)
+        try:
+            vc = await channel.connect(self_deaf=True)
+        except discord.ClientException:
+            await itx.followup.send("เทียนไขกำลังเข้าห้องอยู่ค่ะ รอแป๊บนึงนะคะ", ephemeral=True)
+            return
+        except (TimeoutError, discord.Forbidden) as e:
+            log.warning("guild=%s voice connect failed: %r", itx.guild.id, e)
+            await itx.followup.send(
+                "เข้าห้องไม่ได้ค่ะ ลองเช็กว่าเทียนไขมีสิทธิ์ Connect กับ Speak ในห้องนี้นะคะ", ephemeral=True
+            )
+            return
         session = VoiceSession(vc, self.bot.router)
         self.sessions[itx.guild.id] = session
         session.sound(STARTUP_SOUND)
