@@ -1,4 +1,5 @@
 import logging
+import os
 
 import aiohttp
 import discord
@@ -65,10 +66,52 @@ class Candle(commands.Bot):
         )
 
 
+class _VoiceOnly(logging.Filter):
+    """Keep voice/DAVE debug lines only.
+
+    Allow-list by message prefix: main-gateway events (GUILD_CREATE,
+    MESSAGE_CREATE) carry member lists and message content and must never
+    pass, even though some contain the word "voice".
+    """
+
+    PREFIXES = (
+        "voice websocket",
+        "sending voice websocket",
+        "mls ",
+        "set mls",
+        "preparing for dave",
+        "executing dave",
+        "received supported encryption",
+        "selected the voice protocol",
+        "sending ip discovery",
+        "received ip discovery",
+        "detected ip",
+        "received secret key",
+        "connecting to voice socket",
+    )
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        if record.levelno > logging.DEBUG:
+            return True
+        msg = record.getMessage().lower()
+        if "token" in msg or "secret_key" in msg:
+            return False
+        return msg.startswith(self.PREFIXES)
+
+
+def _enable_voice_debug() -> None:
+    for name in ("discord.gateway", "discord.voice_state", "discord.voice_client"):
+        logger = logging.getLogger(name)
+        logger.setLevel(logging.DEBUG)
+        logger.addFilter(_VoiceOnly())
+
+
 def main() -> None:
     load_dotenv()
     settings = load_settings()
     discord.utils.setup_logging(level=logging.INFO)
+    if os.environ.get("VOICE_DEBUG") == "1":
+        _enable_voice_debug()
     if settings.azure_speech_key is None:
         log.warning("AZURE_SPEECH_KEY not set; every message will use gTTS")
     Candle(settings).run(settings.discord_token, log_handler=None)

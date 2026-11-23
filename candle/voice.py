@@ -15,6 +15,7 @@ from candle.tts.router import TTSRouter
 log = logging.getLogger(__name__)
 
 QUEUE_MAX = 10
+DAVE_READY_TIMEOUT = 10.0  # seconds to wait for voice E2EE before playing anyway
 
 
 @dataclass(frozen=True)
@@ -123,5 +124,31 @@ class VoiceSession:
                 log.warning("guild=%s player error: %s", self.vc.guild.id, error)
             loop.call_soon_threadsafe(lambda: done.done() or done.set_result(None))
 
+        await self._wait_for_dave()
         self.vc.play(source, after=after)
         await done
+
+    async def _wait_for_dave(self) -> None:
+        """Hold playback until the DAVE (E2EE) session is ready.
+
+        discord.py 2.7 sends frames unencrypted while the MLS handshake is
+        still running, and clients in an E2EE call drop them, so audio
+        played right after connecting is silent. Uses private discord.py
+        state (`_connection`); recheck on library upgrades.
+        """
+        conn = self.vc._connection
+        if conn.dave_protocol_version == 0 or conn.can_encrypt:
+            return
+        loop = asyncio.get_running_loop()
+        start = loop.time()
+        while loop.time() - start < DAVE_READY_TIMEOUT:
+            if conn.dave_protocol_version == 0 or conn.can_encrypt:
+                break
+            await asyncio.sleep(0.1)
+        log.info(
+            "guild=%s dave_version=%s dave_ready=%s waited=%.1fs",
+            self.vc.guild.id,
+            conn.dave_protocol_version,
+            conn.can_encrypt,
+            loop.time() - start,
+        )
