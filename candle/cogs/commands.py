@@ -101,17 +101,25 @@ class TTSCommands(commands.Cog):
     # --- settings ------------------------------------------------------
 
     @app_commands.command(name="setup", description="เลือกห้องแชทที่ให้เทียนไขอ่าน (ไม่ใส่ห้อง = ดูค่าที่ตั้งไว้)")
-    @app_commands.describe(channel="ห้องแชทที่จะให้อ่านออกเสียง")
+    @app_commands.describe(channel="ห้องแชท หรือห้องเสียง (อ่านแชทในห้องเสียงนั้น)")
     @app_commands.guild_only()
     @app_commands.default_permissions(manage_guild=True)
-    async def setup(self, itx: discord.Interaction, channel: discord.TextChannel | None = None) -> None:
+    async def setup(
+        self,
+        itx: discord.Interaction,
+        channel: discord.TextChannel | discord.VoiceChannel | discord.StageChannel | None = None,
+    ) -> None:
         assert itx.guild is not None
         store = self.bot.store
         if channel is None:
             s = store.get(itx.guild.id)
             where = f"<#{s.tts_channel_id}>" if s.tts_channel_id else "ยังไม่ได้ตั้ง"
             voice = THAI_VOICES.get(s.voice or self.bot.settings.default_voice, s.voice)
-            await itx.response.send_message(f"ห้องที่อ่าน: {where}\nเสียง: {voice}", ephemeral=True)
+            await itx.response.send_message(
+                f"ห้องที่อ่าน: {where}\nเสียง: {voice}\n"
+                "จะตั้งห้อง ให้พิมพ์ `/setup` แล้วกดช่อง **channel** เลือกห้องนะคะ",
+                ephemeral=True,
+            )
             return
         await store.set_channel(itx.guild.id, channel.id)
         await itx.response.send_message(f"ตั้งค่าแล้วค่ะ เทียนไขจะอ่านข้อความในห้อง {channel.mention}")
