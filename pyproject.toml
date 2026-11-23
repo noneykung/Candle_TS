@@ -17,6 +17,9 @@ dev = ["pytest>=8", "pytest-asyncio>=0.24"]
 [tool.setuptools]
 packages = ["candle", "candle.tts", "candle.cogs"]
 
+[tool.setuptools.package-data]
+candle = ["assets/*.wav"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"

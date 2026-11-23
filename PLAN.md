@@ -25,10 +25,10 @@
 
 ## Phase 0: เคลียร์ repo
 
-- [ ] สร้าง branch `rewrite`
-- [ ] ใช้ `git filter-repo` ลบ `text.txt` และ token ออกจาก history แล้ว force-push (ต้องถามเจ้าของก่อนลงมือ)
-- [ ] ลบ `tts.py`, `tts2.py`, `move.py` และไฟล์เสียงที่ไม่ได้ใช้ เก็บไว้แค่ `startup.wav`
-- [ ] เพิ่ม `.gitignore` สำหรับ `.env`, `*.db` และ `__pycache__/`
+- [x] สร้าง branch `rewrite`
+- [x] ใช้ `git filter-repo` ลบ `text.txt` และ token ออกจาก history แล้ว force-push (ต้องถามเจ้าของก่อนลงมือ)
+- [x] ลบ `tts.py`, `tts2.py`, `move.py` และไฟล์เสียงที่ไม่ได้ใช้ เก็บไว้แค่ `startup.wav`
+- [x] เพิ่ม `.gitignore` สำหรับ `.env`, `*.db` และ `__pycache__/`
 
 ## Phase 1: โครงสร้าง
 
@@ -45,7 +45,7 @@ candle/
     router.py      # fallback + จำว่าโควตาหมดจนถึงวันที่ 1 ของเดือน
   voice.py         # คิวและ player แยกตามเซิร์ฟเวอร์
   cogs/commands.py # /join /leave /setup /voice /skip /help
-assets/startup.wav
+candle/assets/startup.wav   # ติดไปกับ package
 tests/
   test_normalize.py
   test_router.py
@@ -90,10 +90,10 @@ README.md
 
 ## Phase 3: Deploy
 
-- [ ] `Dockerfile` สำหรับ arm64 ที่มี ffmpeg
-- [ ] `compose.yaml` ตั้ง `restart: unless-stopped` และ mount volume สำหรับ SQLite
-- [ ] `.env.example` และ `README.md` อธิบายการตั้งค่า
-- [ ] `deploy.sh`: SSH เข้าไป `git pull` แล้ว `docker compose up -d --build`
+- [x] `Dockerfile` สำหรับ arm64 ที่มี ffmpeg
+- [x] `compose.yaml` ตั้ง `restart: unless-stopped` และ mount volume สำหรับ SQLite
+- [x] `.env.example` และ `README.md` อธิบายการตั้งค่า
+- [x] `deploy.sh`: SSH เข้าไป `git pull` แล้ว `docker compose up -d --build`
 - [ ] ทดสอบใน dev guild (sync command เฉพาะ `DEV_GUILD_ID`) แล้วค่อย sync แบบ global
 
 ## เกณฑ์ว่าเสร็จ
@@ -101,7 +101,7 @@ README.md
 - [ ] บอทอยู่ 2 เซิร์ฟเวอร์พร้อมกัน แต่ละที่อ่านคนละห้อง และข้อความไม่ข้ามไปอีกเซิร์ฟเวอร์
 - [ ] พิมพ์ติดกันเร็ว ๆ แล้วบอทอ่านตามลำดับ ไม่ error
 - [ ] ปิด Azure key แล้วบอทยังอ่านได้ด้วย gTTS
-- [ ] `pytest` ผ่านทั้งหมด
+- [x] `pytest` ผ่านทั้งหมด
 
 ## เก็บไว้ทำ v2
 

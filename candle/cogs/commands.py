@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 
 log = logging.getLogger(__name__)
 
-STARTUP_SOUND = Path(__file__).resolve().parents[2] / "assets" / "startup.wav"
+STARTUP_SOUND = Path(__file__).resolve().parent.parent / "assets" / "startup.wav"
 EMPTY_TIMEOUT = 60  # seconds alone in a voice channel before leaving
 VERSION = "0.2.0"
 CANDLE_COLOUR = discord.Colour.from_rgb(255, 230, 189)
