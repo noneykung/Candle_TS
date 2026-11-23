@@ -5,6 +5,14 @@ class TTSError(Exception):
     """A provider failed for this one request (timeout, 5xx, bad response)."""
 
 
+class RateLimited(TTSError):
+    """The provider asked us to back off for a while (HTTP 429)."""
+
+    def __init__(self, retry_after: float, message: str = "rate limited") -> None:
+        super().__init__(message)
+        self.retry_after = retry_after
+
+
 class QuotaExceeded(TTSError):
     """The provider's monthly quota is used up; stop calling it until reset."""
 
