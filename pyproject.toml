@@ -15,7 +15,7 @@ dependencies = [
 dev = ["pytest>=8", "pytest-asyncio>=0.24"]
 
 [tool.setuptools]
-packages = ["candle", "candle.tts"]
+packages = ["candle", "candle.tts", "candle.cogs"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
