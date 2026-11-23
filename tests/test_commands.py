@@ -80,3 +80,51 @@ async def test_slash_commands_register():
     for c in bot.tree.get_commands():
         c.to_dict(bot.tree)  # raises if a payload is invalid
     await bot.unload_extension("candle.cogs.commands")
+
+
+class ClosableSession(FakeSession):
+    def __init__(self, vc):
+        super().__init__()
+        self.vc = vc
+        self.closed = False
+
+    async def close(self):
+        self.closed = True
+
+
+def bot_left_voice(cog, guild_voice_client):
+    """Simulate the "bot left voice" event; return the guild's session."""
+    vc = SimpleNamespace(is_connected=lambda: True)
+    session = ClosableSession(vc)
+    cog.sessions = {1: session}
+    guild = SimpleNamespace(id=1, voice_client=vc if guild_voice_client == "same" else None)
+    cog.bot.user = SimpleNamespace(id=999)
+    cog.bot.get_guild = lambda gid: guild
+    member = SimpleNamespace(id=999, guild=guild)
+    return session, member
+
+
+async def test_voice_reconnect_keeps_session(cog, monkeypatch):
+    import asyncio
+
+    # Patch the module the class actually runs in: unload_extension in
+    # another test drops candle.cogs.commands from sys.modules.
+    monkeypatch.setitem(TTSCommands._end_if_disconnected.__globals__, "RECONNECT_GRACE", 0)
+    session, member = bot_left_voice(cog, guild_voice_client="same")
+    await cog.on_voice_state_update(member, None, SimpleNamespace(channel=None))
+    await asyncio.sleep(0.01)
+    assert cog.sessions.get(1) is session
+    assert not session.closed
+
+
+async def test_real_disconnect_ends_session(cog, monkeypatch):
+    import asyncio
+
+    # Patch the module the class actually runs in: unload_extension in
+    # another test drops candle.cogs.commands from sys.modules.
+    monkeypatch.setitem(TTSCommands._end_if_disconnected.__globals__, "RECONNECT_GRACE", 0)
+    session, member = bot_left_voice(cog, guild_voice_client=None)
+    await cog.on_voice_state_update(member, None, SimpleNamespace(channel=None))
+    await asyncio.sleep(0.01)
+    assert 1 not in cog.sessions
+    assert session.closed

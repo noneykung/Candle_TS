@@ -18,6 +18,7 @@ log = logging.getLogger(__name__)
 
 STARTUP_SOUND = Path(__file__).resolve().parent.parent / "assets" / "startup.wav"
 EMPTY_TIMEOUT = 60  # seconds alone in a voice channel before leaving
+RECONNECT_GRACE = 3  # seconds to let discord.py finish a voice reconnect
 VERSION = "0.2.0"
 CANDLE_COLOUR = discord.Colour.from_rgb(255, 230, 189)
 
@@ -26,6 +27,7 @@ class TTSCommands(commands.Cog):
     def __init__(self, bot: "Candle") -> None:
         self.bot = bot
         self.sessions: dict[int, VoiceSession] = {}
+        self._background: set[asyncio.Task[None]] = set()
 
     async def cog_unload(self) -> None:
         for session in self.sessions.values():
@@ -195,9 +197,31 @@ class TTSCommands(commands.Cog):
         if session is None:
             return
         if self.bot.user is not None and member.id == self.bot.user.id and after.channel is None:
-            await self._end(member.guild.id)  # kicked or disconnected
+            # Keep a reference: asyncio only holds tasks weakly, so an
+            # unreferenced task can be garbage-collected mid-sleep.
+            task = asyncio.create_task(self._end_if_disconnected(member.guild.id, session))
+            self._background.add(task)
+            task.add_done_callback(self._background.discard)
             return
         self._watch_empty(member.guild.id, session)
+
+    async def _end_if_disconnected(self, guild_id: int, session: VoiceSession) -> None:
+        """Drop the session only if the bot really left voice.
+
+        discord.py's own reconnect (e.g. after a 1006 close) also leaves the
+        channel first, which arrives as "channel None"; it keeps the voice
+        client registered and rejoins. A kick or a real disconnect makes
+        discord.py clean the voice client up, so guild.voice_client changes.
+        """
+        await asyncio.sleep(RECONNECT_GRACE)
+        if self.sessions.get(guild_id) is not session:
+            return  # already ended or replaced by a new /join
+        guild = self.bot.get_guild(guild_id)
+        if guild is not None and guild.voice_client is session.vc:
+            log.info("guild=%s voice reconnected, keeping session", guild_id)
+            return
+        log.info("guild=%s disconnected from voice", guild_id)
+        await self._end(guild_id)
 
     def _watch_empty(self, guild_id: int, session: VoiceSession) -> None:
         channel = session.vc.channel
