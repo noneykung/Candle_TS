@@ -1,0 +1,23 @@
+[project]
+name = "candle-ts"
+version = "0.2.0"
+description = "เทียนไข: Thai text-to-speech bot for Discord"
+requires-python = ">=3.12"
+dependencies = [
+    "discord.py[voice]>=2.7.1,<3",  # voice extra pulls in davey (DAVE E2EE)
+    "aiohttp>=3.9",
+    "aiosqlite>=0.20",
+    "gTTS>=2.5",
+    "python-dotenv>=1.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "pytest-asyncio>=0.24"]
+
+[tool.setuptools]
+packages = ["candle", "candle.tts"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
