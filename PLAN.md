@@ -1,6 +1,6 @@
 # แผนรีไรท์ Candle_TS (เทียนไข)
 
-บอท TTS ภาษาไทยบน Discord เขียนใหม่ให้ใช้ได้หลายเซิร์ฟเวอร์ ใช้เสียง neural ของ Azure เป็นหลัก มี gTTS สำรอง และ deploy ขึ้น Oracle Cloud Always Free
+บอท TTS ภาษาไทยบน Discord เขียนใหม่ให้ใช้ได้หลายเซิร์ฟเวอร์ ใช้เสียง neural ของ Azure เป็นหลัก มี gTTS สำรอง และ deploy ขึ้น Google Cloud e2-micro (free tier)
 
 ## การตัดสินใจ
 
@@ -8,7 +8,7 @@
 |---|---|
 | ภาษา / library | Python + discord.py 2.7+ (เวอร์ชันที่รองรับ DAVE voice E2EE) |
 | ขนาดเป้าหมาย | ต่ำกว่า 100 เซิร์ฟเวอร์ ไม่ต้องทำ verification แต่ทุกอย่างแยกตามเซิร์ฟเวอร์ตั้งแต่แรก |
-| Hosting | Oracle Cloud Always Free (Ampere A1, ARM) ถ้า capacity เต็มให้ย้ายไป VPS แบบเสียเงิน |
+| Hosting | Google Cloud e2-micro (us-west1, x86) แบบ free tier เดิมเลือก Oracle Always Free แต่เปลี่ยน เพราะ Oracle อาจเรียกคืน VM ที่ใช้ CPU ต่ำกว่า 20% ติดกัน 7 วัน ถ้าอยากให้เสียงไวขึ้นค่อยย้ายไป VPS สิงคโปร์ |
 | Voice หลัก | Azure Speech F0 เรียกผ่าน REST + `aiohttp` (ฟรี 0.5 ล้านตัวอักษรต่อเดือน ถ้าเกินจะหยุด ไม่เก็บเงินเพิ่ม) |
 | Voice สำรอง | gTTS |
 | ที่เก็บข้อมูล | SQLite ผ่าน `aiosqlite` เก็บไว้ใน Docker volume |
@@ -21,7 +21,7 @@
 
 1. Discord Developer Portal: กด **Reset Token** และเปิด **Message Content Intent**
 2. Azure: สร้าง Speech resource แบบ **F0** ใน region Southeast Asia แล้วเก็บ key ไว้
-3. Oracle Cloud: สมัครบัญชีและสร้าง VM แบบ Ampere A1 (ARM)
+3. Google Cloud: สมัครบัญชี ตั้ง budget alert และสร้าง VM e2-micro ตามขั้นตอนใน README
 
 ## Phase 0: เคลียร์ repo
 
@@ -90,7 +90,7 @@ README.md
 
 ## Phase 3: Deploy
 
-- [x] `Dockerfile` สำหรับ arm64 ที่มี ffmpeg
+- [x] `Dockerfile` ที่มี ffmpeg (ทดสอบแล้วทั้ง amd64 และ arm64)
 - [x] `compose.yaml` ตั้ง `restart: unless-stopped` และ mount volume สำหรับ SQLite
 - [x] `.env.example` และ `README.md` อธิบายการตั้งค่า
 - [x] `deploy.sh`: SSH เข้าไป `git pull` แล้ว `docker compose up -d --build`

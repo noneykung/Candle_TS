@@ -45,19 +45,52 @@ python -m venv .venv
 .venv\Scripts\python -m candle
 ```
 
-## Deploy บน Oracle Cloud Always Free
+## Deploy บน Google Cloud (e2-micro free tier)
 
-1. สร้าง VM แบบ **Ampere A1** (ARM) image Ubuntu 24.04 ขนาด 1 OCPU / 6 GB ก็พอ บอทไม่ต้องรับการเชื่อมต่อเข้า จึงไม่ต้องเปิด port
-2. SSH เข้าไปติดตั้ง Docker แล้ว clone repo:
-   ```
-   sudo apt update && sudo apt install -y docker.io docker-compose-v2 git
-   sudo usermod -aG docker $USER   # ออกแล้ว SSH เข้าใหม่
-   git clone https://github.com/noneykung/Candle_TS.git candle_ts
-   cd candle_ts && cp .env.example .env && nano .env
-   docker compose up -d --build
-   ```
-3. ครั้งต่อไปให้รันจากเครื่องตัวเอง (Git Bash หรือ WSL): `./deploy.sh ubuntu@<vm-ip>`
-   ถ้ายังไม่ได้ merge เข้า main ให้ใช้ `DEPLOY_BRANCH=rewrite ./deploy.sh ubuntu@<vm-ip>`
+ใช้ e2-micro แทน Oracle เพราะ Oracle Always Free อาจเรียกคืน VM ที่ใช้ CPU ต่ำกว่า 20% ติดกัน 7 วัน ซึ่งบอท TTS เข้าข่ายแน่นอน
+
+**1. บัญชีและงบ**
+- สมัคร Google Cloud ผูกบัตร แล้วสร้าง project ใหม่
+- Billing → Budgets & alerts → สร้าง budget ไว้ 1 ดอลลาร์ ถ้ามีค่าใช้จ่ายเกิดขึ้นจะได้อีเมลแจ้งทันที
+
+**2. สร้าง VM** (Compute Engine → VM instances → Create instance ถ้าระบบขอให้เปิด API ก็กดเปิด)
+- Region: **us-west1 (Oregon)** ใกล้สิงคโปร์ที่สุดในสาม region ที่ฟรี
+- Machine: **E2 → e2-micro**
+- Boot disk → Change: **Ubuntu 24.04 LTS (x86/64)** และเปลี่ยนชนิดดิสก์เป็น **Standard persistent disk** ขนาด **30 GB** ถ้าเป็น Balanced หรือ SSD จะไม่ฟรี
+- Firewall: ไม่ต้องติ๊ก HTTP/HTTPS บอทไม่ต้องรับการเชื่อมต่อเข้า
+- หน้าสร้าง VM จะแสดงค่าใช้จ่ายรายเดือนอยู่ด้วย ส่วนลด free tier จะไปหักในบิลภายหลัง
+
+**3. SSH เข้าเครื่อง** กดปุ่ม **SSH** ในหน้า VM instances จะเปิดเทอร์มินัลในเบราว์เซอร์ จากนั้นรันตามนี้:
+```
+# swap 2 GB (RAM 1 GB ไม่พอตอน build image)
+sudo fallocate -l 2G /swapfile && sudo chmod 600 /swapfile
+sudo mkswap /swapfile && sudo swapon /swapfile
+echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+
+# Docker
+sudo apt update && sudo apt install -y docker.io docker-compose-v2 git
+sudo usermod -aG docker $USER
+```
+ปิดหน้าต่าง SSH แล้วกด SSH ใหม่ ให้สิทธิ์ docker มีผล จากนั้นรัน:
+```
+git clone -b rewrite https://github.com/noneykung/Candle_TS.git candle_ts
+cd candle_ts && cp .env.example .env && nano .env
+docker compose up -d --build
+docker compose logs -f
+```
+ใน `.env` ใส่ `DISCORD_TOKEN` และเว้น `DEV_GUILD_ID` กับ `VOICE_DEBUG` ว่างไว้
+
+**4. ปิดบอทบนเครื่องตัวเองก่อน** ถ้าใช้ token เดียวกันรันสองที่พร้อมกัน บอทจะตอบซ้ำและอ่านซ้ำ ให้รัน `docker compose down` บนเครื่องตัวเอง
+
+**5. ตั้งค่าใหม่** DB บน VM เริ่มจากว่าง ต้องใช้ `/setup` กับ `/voice` ใหม่ในทุกเซิร์ฟเวอร์
+
+**อัปเดตโค้ดครั้งต่อไป** มีสองวิธี
+- SSH ผ่านเบราว์เซอร์ แล้วรัน `cd candle_ts && git pull && docker compose up -d --build`
+- หรือรัน `deploy.sh` จากเครื่องตัวเอง (Git Bash หรือ WSL) ต้องสร้าง SSH key ก่อน (`ssh-keygen -t ed25519`) แล้วนำ public key ไปใส่ที่หน้า VM → Edit → SSH Keys จากนั้นรัน:
+  ```
+  DEPLOY_BRANCH=rewrite ./deploy.sh <username>@<external-ip>
+  ```
+  external IP แบบ ephemeral จะเปลี่ยนถ้าสั่ง stop แล้ว start VM ใหม่
 
 ดู log ด้วย `docker compose logs -f` log บันทึกแค่ guild id ความยาวข้อความ และ provider ที่ใช้ ไม่บันทึกเนื้อหาข้อความ ถ้าเห็น `azure quota exhausted` ทั้งที่เพิ่งเริ่มเดือน ให้เช็กว่า key กับ region ถูกต้อง
 
